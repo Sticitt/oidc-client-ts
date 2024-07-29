@@ -4,7 +4,14 @@
 import { CryptoUtils, Logger } from "./utils";
 import { ErrorResponse } from "./errors";
 import { type NavigateResponse, type PopupWindowParams, type IWindow, type IFrameWindowParams, type RedirectParams, RedirectNavigator, PopupNavigator, IFrameNavigator, type INavigator } from "./navigators";
-import { OidcClient, type CreateSigninRequestArgs, type CreateSignoutRequestArgs, type ProcessResourceOwnerPasswordCredentialsArgs, type UseRefreshTokenArgs } from "./OidcClient";
+import {
+    OidcClient,
+    type CreateSigninRequestArgs,
+    type CreateSignoutRequestArgs,
+    type ProcessResourceOwnerPasswordCredentialsArgs,
+    type UseRefreshTokenArgs,
+    type ProcessCustomGrantTypeArgs,
+} from "./OidcClient";
 import { type UserManagerSettings, UserManagerSettingsStore } from "./UserManagerSettings";
 import { User } from "./User";
 import { UserManagerEvents } from "./UserManagerEvents";
@@ -51,6 +58,11 @@ export type SigninSilentArgs = IFrameWindowParams & ExtraSigninRequestArgs;
  * @public
  */
 export type SigninResourceOwnerCredentialsArgs = ProcessResourceOwnerPasswordCredentialsArgs;
+
+/**
+ * @public
+ */
+export type SigninCustomGrantTypeArgs = ProcessCustomGrantTypeArgs;
 
 /**
  * @public
@@ -203,6 +215,30 @@ export class UserManager {
             logger.info("no subject");
         }
 
+        return user;
+    }
+
+    public async signinCustomGrant({
+        grantType,
+        customData,
+    }: SigninCustomGrantTypeArgs): Promise<User> {
+        const logger = this._logger.create("signinCustomGrant");
+
+        const signinResponse = await this._client.processCustomGrantType({
+            grantType,
+            extraTokenParams: {
+                ...this.settings.extraTokenParams,
+                ...customData,
+            },
+        });
+        logger.debug("got signin response");
+
+        const user = await this._buildUser(signinResponse);
+        if (user.profile && user.profile.sub) {
+            logger.info("success, signed in subject", user.profile.sub);
+        } else {
+            logger.info("no subject");
+        }
         return user;
     }
 

@@ -344,6 +344,8 @@ export class OidcClient {
     // (undocumented)
     readonly metadataService: MetadataService;
     // (undocumented)
+    processCustomGrantType({ grantType, extraTokenParams, }: ProcessCustomGrantTypeArgs): Promise<SigninResponse>;
+    // (undocumented)
     processResourceOwnerPasswordCredentials({ username, password, skipUserInfo, extraTokenParams, }: ProcessResourceOwnerPasswordCredentialsArgs): Promise<SigninResponse>;
     // (undocumented)
     processSigninResponse(url: string, extraHeaders?: Record<string, ExtraHeader>): Promise<SigninResponse>;
@@ -588,6 +590,13 @@ export interface PopupWindowParams {
 }
 
 // @public (undocumented)
+export type ProcessCustomGrantTypeArgs = {
+    grantType: string;
+    customData?: Record<string, unknown>;
+    extraTokenParams?: Record<string, unknown>;
+};
+
+// @public (undocumented)
 export type ProcessResourceOwnerPasswordCredentialsArgs = {
     username: string;
     password: string;
@@ -655,6 +664,9 @@ export interface SessionStatus {
     session_state: string;
     sub?: string;
 }
+
+// @public (undocumented)
+export type SigninCustomGrantTypeArgs = ProcessCustomGrantTypeArgs;
 
 // @public (undocumented)
 export type SigningKey = Record<string, string | string[]>;
@@ -1028,6 +1040,8 @@ export class UserManager {
     // (undocumented)
     protected _signin(args: CreateSigninRequestArgs, handle: IWindow, verifySub?: string): Promise<User>;
     signinCallback(url?: string): Promise<User | undefined>;
+    // (undocumented)
+    signinCustomGrant({ grantType, customData, }: SigninCustomGrantTypeArgs): Promise<User>;
     // (undocumented)
     protected _signinEnd(url: string, verifySub?: string): Promise<User>;
     signinPopup(args?: SigninPopupArgs): Promise<User>;

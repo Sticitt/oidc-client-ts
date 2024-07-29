@@ -64,6 +64,12 @@ export type ProcessResourceOwnerPasswordCredentialsArgs = {
     extraTokenParams?: Record<string, unknown>;
 };
 
+export type ProcessCustomGrantTypeArgs = {
+    grantType: string;
+    customData?: Record<string, unknown>;
+    extraTokenParams?: Record<string, unknown>;
+};
+
 /**
  * Provides the raw OIDC/OAuth2 protocol support for the authorization endpoint and the end session endpoint in the
  * authorization server. It provides a bare-bones protocol implementation and is used by the UserManager class.
@@ -231,6 +237,18 @@ export class OidcClient {
             keyPair: dpopState.keys,
             nonce: dpopState.nonce,
         });
+    }
+
+    public async processCustomGrantType({
+        grantType,
+        extraTokenParams = {},
+    } : ProcessCustomGrantTypeArgs) {
+        const tokenResponse: Record<string, unknown> = await this._tokenClient.exchangeCredentials({
+            grant_type: grantType, username: undefined, password: undefined, ...extraTokenParams });
+        const signinResponse: SigninResponse = new SigninResponse(new URLSearchParams());
+        Object.assign(signinResponse, tokenResponse);
+        await this._validator.validateCredentialsResponse(signinResponse, false);
+        return signinResponse;
     }
 
     public async processResourceOwnerPasswordCredentials({
