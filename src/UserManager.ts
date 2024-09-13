@@ -231,6 +231,11 @@ export class UserManager {
                 ...customData,
             },
         });
+
+        if (!signinResponse.scope) {
+            signinResponse.scope = this.settings.scope;
+        }
+
         logger.debug("got signin response");
 
         const user = await this._buildUser(signinResponse);
